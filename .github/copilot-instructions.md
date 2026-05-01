@@ -3,7 +3,7 @@
 
 # Ledger Live Monorepo
 
-This is the **ledger-live** monorepo — a pnpm + turborepo workspace containing:
+This is the **ledger-live** monorepo — a pnpm + Nx workspace containing:
 
 - `apps/ledger-live-desktop` — Electron desktop wallet (React, TypeScript)
 - `apps/ledger-live-mobile` — React Native mobile wallet (iOS/Android)
