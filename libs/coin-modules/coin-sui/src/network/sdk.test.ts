@@ -325,7 +325,7 @@ function mockStakingTx(address: string, amount: string) {
     ],
     events: [
       {
-        type: "0x3::staking_pool::StakingRequestEvent",
+        type: "0x3::validator::StakingRequestEvent",
         parsedJson: {
           validator_address: validatorAddress,
           staked_sui_id: "0xstaked_object_id_123",
@@ -1301,7 +1301,7 @@ describe("Staking Operations", () => {
       const tx = mockStakingTx(address, "-1001050000");
       (tx as any).events = [
         {
-          type: "0x3::staking_pool::StakingRequestEvent",
+          type: "0x3::validator::StakingRequestEvent",
           parsedJson: { validator_address: "0xabc" },
         },
       ];
@@ -1366,7 +1366,7 @@ describe("getStakingEventDetails", () => {
   it("should extract all fields from StakingRequestEvent", () => {
     const tx = makeTx([
       {
-        type: "0x3::staking_pool::StakingRequestEvent",
+        type: "0x3::validator::StakingRequestEvent",
         parsedJson: {
           validator_address: "0xabc",
           staked_sui_id: "0xobj123",
@@ -1400,7 +1400,7 @@ describe("getStakingEventDetails", () => {
   it("should handle partial StakingRequestEvent fields", () => {
     const tx = makeTx([
       {
-        type: "0x3::staking_pool::StakingRequestEvent",
+        type: "0x3::validator::StakingRequestEvent",
         parsedJson: { validator_address: "0xabc" },
       },
     ]);

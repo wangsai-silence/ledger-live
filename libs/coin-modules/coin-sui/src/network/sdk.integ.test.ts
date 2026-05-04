@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js";
 import coinConfig from "../config";
 import { normalizeSuiAddressForComparison } from "../utils";
 import {
+  alpacaTransactionToOp,
   createTransaction,
   DEFAULT_COIN_TYPE,
   getAccountBalances,
@@ -495,8 +496,50 @@ describe("SUI SDK Integration tests", () => {
     });
   });
 
-  // Pin both transfer flows to immutable on-chain transactions and verify the
-  // SDK maps each correctly. Asserts flow-specific on-chain shape
+  // Regression guard for BACK-10134: the wrong event module name
+  // (staking_pool instead of validator) caused validatorAddress,
+  // stakedObjectId, rewardAmount, and withdrawnAmount to be silently dropped
+  // from staking operation details. These tests fetch real on-chain
+  // transactions with showEvents:true and assert all detail fields survive the
+  // full pipeline, catching any future constant drift that unit tests cannot.
+  describe("staking operation details (BACK-10134 regression)", () => {
+    // https://suiscan.xyz/mainnet/account/0x13d73cab19d2cf14e39289b122ed93fb0f9edd00e4c829e0cefb1f0611c54a8f
+    const STAKING_ADDRESS = "0x13d73cab19d2cf14e39289b122ed93fb0f9edd00e4c829e0cefb1f0611c54a8f";
+    // https://suiscan.xyz/mainnet/tx/4UtCqCH3oNEdaprZR9UjaMGg6HgLn3V3q3FEcvs5vieM
+    const UNDELEGATE_TX_DIGEST = "4UtCqCH3oNEdaprZR9UjaMGg6HgLn3V3q3FEcvs5vieM";
+
+    it("UNDELEGATE: validatorAddress, rewardAmount and withdrawnAmount are populated from live events", async () => {
+      const raw = await withApi(api =>
+        api.getTransactionBlock({
+          digest: UNDELEGATE_TX_DIGEST,
+          options: { showInput: true, showBalanceChanges: true, showEffects: true, showEvents: true },
+        }),
+      );
+      const op = alpacaTransactionToOp(STAKING_ADDRESS, raw, undefined);
+      expect(op.type).toBe("UNDELEGATE");
+      expect(op.details).toMatchObject({
+        validatorAddress: expect.stringMatching(/^0x[0-9a-f]+$/i),
+        rewardAmount: expect.anything(),
+        withdrawnAmount: expect.anything(),
+      });
+    });
+
+    it("DELEGATE: validatorAddress and stakedObjectId are populated from live events", async () => {
+      // Fetch ascending so the first page contains the oldest ops (the DELEGATE
+      // txs that preceded the known UNDELEGATE on this account)
+      const { items } = await getListOperations(STAKING_ADDRESS, "asc");
+      const delegateOp = items.find(op => op.type === "DELEGATE");
+      expect(delegateOp).not.toBeUndefined();
+      // validatorAddress is the field that was silently dropped by the bug.
+      // stakedObjectId is omitted here as it is absent from older on-chain events.
+      expect(delegateOp!.details).toMatchObject({
+        validatorAddress: expect.stringMatching(/^0x[0-9a-f]+$/i),
+      });
+    });
+  });
+
+  // Pin both transfer flows to immutable on-chain testnet transactions and
+  // verify the SDK maps each correctly. Asserts flow-specific on-chain shape
   // (gasData.payment, accumulatorEvents) AND the resulting Operation values,
   // so both code paths in sdk.ts are exercised end-to-end against live RPC.
   //
