@@ -66,6 +66,7 @@ import {
   NanoSNotSupportedComponent,
   UnsupportedFeatureComponent,
 } from "./rendering";
+import { useStuckDeviceActionHint } from "../StuckDeviceActionHint/useStuckDeviceActionHint";
 import { ThorSwapIncompatibility } from "./ThorSwapIncompatibility";
 import { WalletState } from "@ledgerhq/live-wallet/store";
 import { DeviceId } from "@ledgerhq/client-ids/ids";
@@ -307,6 +308,11 @@ export function DeviceActionDefaultRendering<R, H extends Status, P>({
 
   useTrackDmkErrorsEvents({ error });
 
+  // Stuck device-action hint: surfaced after 10s of being in a loading
+  // state without an error. The timer naturally resets whenever this
+  // component unmounts or `error` flips truthy.
+  const showStuckHint = useStuckDeviceActionHint(!error);
+
   // Add deviceId to identities store when detected
   useEffect(() => {
     if (deviceId) {
@@ -499,6 +505,7 @@ export function DeviceActionDefaultRendering<R, H extends Status, P>({
       device: selectedDevice,
       colors,
       theme,
+      showStuckHint,
     });
   }
 
@@ -555,6 +562,7 @@ export function DeviceActionDefaultRendering<R, H extends Status, P>({
       description: t("DeviceAction.listApps"),
       colors,
       theme,
+      showStuckHint,
     });
   }
 
@@ -707,6 +715,7 @@ export function DeviceActionDefaultRendering<R, H extends Status, P>({
       t,
       colors,
       theme,
+      showStuckHint,
     });
   }
 

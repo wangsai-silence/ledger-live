@@ -28,6 +28,7 @@ import firmwareUpdateRepair from "@ledgerhq/live-common/hw/firmwareUpdate-repair
 import { isInvalidGetFirmwareMetadataResponseError } from "@ledgerhq/live-dmk-mobile";
 import { WalletState } from "@ledgerhq/live-wallet/store";
 import { BoxedIcon, Flex, Icons, IconsLegacy, Link, Log, Tag, Text } from "@ledgerhq/native-ui";
+import { StuckDeviceActionHint } from "../StuckDeviceActionHint";
 import InfiniteLoader from "~/components/InfiniteLoader";
 import { DownloadMedium } from "@ledgerhq/native-ui/assets/icons";
 import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
@@ -275,9 +276,11 @@ export function renderAllowManager({
   device,
   theme,
   requestType = "manager",
+  showStuckHint = false,
 }: RawProps & {
   device: Device;
   requestType?: "manager" | "rename";
+  showStuckHint?: boolean;
 }) {
   // TODO: disable gesture, modal close, hide header buttons
   return (
@@ -300,6 +303,7 @@ export function renderAllowManager({
           style={getDeviceAnimationStyles(device.modelId)}
         />
       </AnimationContainer>
+      {showStuckHint ? <StuckDeviceActionHint /> : null}
     </Wrapper>
   );
 }
@@ -1009,9 +1013,11 @@ export function renderLoading({
   t,
   description,
   lockModal = false,
+  showStuckHint = false,
 }: RawProps & {
   description?: string;
   lockModal?: boolean;
+  showStuckHint?: boolean;
 }) {
   return (
     <Wrapper>
@@ -1019,6 +1025,7 @@ export function renderLoading({
         <InfiniteLoader testID="device-action-loading" />
       </SpinnerContainer>
       <CenteredText>{description ?? t("DeviceAction.loading")}</CenteredText>
+      {showStuckHint ? <StuckDeviceActionHint /> : null}
       {lockModal ? <ModalLock /> : null}
     </Wrapper>
   );
