@@ -37,10 +37,10 @@ test("shared/* gets scope:shared", () => {
 });
 
 test("features/* gets scope:features (regression)", () => {
-  assert.deepEqual(inferTags("features/market-banner", "@features/market-banner"), [
-    "scope:features",
-    "scope:no-apps",
-  ]);
+  assert.deepEqual(
+    inferTags("features/flow/market-banner", "@features/flow-market-banner"),
+    ["scope:features", "scope:no-apps"],
+  );
 });
 
 test("libs/* does not pick up new-arch tags (regression)", () => {
