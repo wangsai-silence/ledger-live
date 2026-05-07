@@ -2,4 +2,4 @@
 "@ledgerhq/coin-sui": patch
 ---
 
-fix missing fields from delegate tx
+Fix missing validatorAddress and stakedObjectId in Sui delegate operation details

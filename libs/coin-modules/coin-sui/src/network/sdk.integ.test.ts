@@ -520,17 +520,11 @@ describe("SUI SDK Integration tests", () => {
       );
       const op = alpacaTransactionToOp(STAKING_ADDRESS, raw, undefined);
       expect(op.type).toBe("UNDELEGATE");
-      expect(op.details).toBeDefined();
-      if (!op.details) {
-        throw new Error("Expected UNDELEGATE operation details to be defined");
-      }
       expect(op.details).toMatchObject({
         validatorAddress: expect.stringMatching(/^0x[0-9a-f]+$/i),
       });
-      expect(Object.prototype.hasOwnProperty.call(op.details, "rewardAmount")).toBe(true);
-      expect(Object.prototype.hasOwnProperty.call(op.details, "withdrawnAmount")).toBe(true);
-      expect(typeof (op.details as { rewardAmount?: unknown }).rewardAmount).toBe("bigint");
-      expect(typeof (op.details as { withdrawnAmount?: unknown }).withdrawnAmount).toBe("bigint");
+      expect(typeof op.details!.rewardAmount).toBe("bigint");
+      expect(typeof op.details!.withdrawnAmount).toBe("bigint");
     });
 
     it("DELEGATE: validatorAddress is populated from live events", async () => {
