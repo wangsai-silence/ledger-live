@@ -218,6 +218,7 @@ async function getTransaction(
     value: tx.value.toString(),
     from: tx.from,
     to: tx.to ?? undefined,
+    type: receipt.type ?? tx.type ?? undefined,
     ...(tx.data !== null && tx.data !== undefined && isSmartContractInput(tx.data)
       ? { input: tx.data }
       : {}),
@@ -620,6 +621,7 @@ async function getBlockReceipts(
       status: receipt.status === null ? null : Number(receipt.status),
       erc20Transfers: parseERC20TransfersFromLogs(receipt.logs),
       ...(contractAddress ? { contractAddress } : {}),
+      ...(receipt.type !== undefined ? { type: Number(receipt.type) } : {}),
     };
   });
 }

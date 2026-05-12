@@ -290,6 +290,7 @@ describe("EVM Family", () => {
           from: "0x6cbcd73cd8e8a42844662f0a0e76d7f79afd933d",
           to: "0xC2907EFccE4011C491BbedA8A0fA63BA7aab596C",
           erc20Transfers: [],
+          type: 0,
         });
       });
     });
