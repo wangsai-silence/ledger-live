@@ -134,12 +134,15 @@ function buildBaseParams(overrides?: {
     return acc;
   });
   getAccountCurrency.mockReturnValue(currency);
-  getAccountBridge.mockReturnValue({
+  const bridge = {
     updateTransaction: (tx: Record<string, unknown>, patch: Record<string, unknown>) => ({
       ...tx,
       ...patch,
     }),
-  });
+  };
+  getAccountBridge.mockReturnValue(
+    Object.assign(Promise.resolve(bridge), { status: "fulfilled", value: bridge }),
+  );
 
   const transaction = createBitcoinTransaction(overrides?.transaction);
   const status = createTransactionStatus(overrides?.status);

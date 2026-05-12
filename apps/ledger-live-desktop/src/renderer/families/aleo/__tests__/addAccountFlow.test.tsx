@@ -91,7 +91,8 @@ jest.mock("@ledgerhq/live-common/bridge/index", () => ({
     preload: () => true,
     hydrate: () => true,
   }),
-  getAccountBridge: () => mockAccountBridge,
+  getAccountBridge: () =>
+    Object.assign(Promise.resolve(mockAccountBridge), { status: "fulfilled", value: mockAccountBridge }),
 }));
 
 jest.mock("~/renderer/bridge/cache", () => ({

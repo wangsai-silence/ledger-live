@@ -40,7 +40,8 @@ describe("useAleoPrivateSync", () => {
     jest.clearAllMocks();
     syncSubject = new Subject();
     mockSync = jest.fn().mockReturnValue(syncSubject.asObservable());
-    getAccountBridge.mockReturnValue({ sync: mockSync });
+    const bridge = { sync: mockSync };
+    getAccountBridge.mockReturnValue(Object.assign(Promise.resolve(bridge), { status: "fulfilled", value: bridge }));
   });
 
   afterEach(() => {
@@ -182,10 +183,8 @@ describe("useAleoPrivateSync", () => {
 
       const { result } = renderHook(() => useAleoPrivateSync({ account: makeAleoAccount() }));
 
-      act(() => {
-        result.current.start();
-      });
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask
+      act(() => { result.current.start(); });
+      await Promise.resolve(); // flush await getAccountBridge microtask
 
       // Complete without emitting next — scanner returned null, retry expected
       act(() => {
@@ -195,10 +194,8 @@ describe("useAleoPrivateSync", () => {
       expect(mockSync).toHaveBeenCalledTimes(1);
       expect(result.current.isSyncing).toBe(true);
 
-      act(() => {
-        jest.advanceTimersByTime(MANDATORY_SYNC_POLLING_DELAY);
-      });
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask for retry
+      act(() => { jest.advanceTimersByTime(MANDATORY_SYNC_POLLING_DELAY); });
+      await Promise.resolve(); // flush await getAccountBridge microtask for retry runSync
 
       expect(mockSync).toHaveBeenCalledTimes(2);
 
@@ -220,10 +217,8 @@ describe("useAleoPrivateSync", () => {
 
       const { result } = renderHook(() => useAleoPrivateSync({ account: makeAleoAccount() }));
 
-      act(() => {
-        result.current.start();
-      });
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask
+      act(() => { result.current.start(); });
+      await Promise.resolve(); // flush await getAccountBridge microtask
 
       // Complete without any next emission — triggers retry after delay
       act(() => {
@@ -232,10 +227,8 @@ describe("useAleoPrivateSync", () => {
 
       expect(mockSync).toHaveBeenCalledTimes(1);
 
-      act(() => {
-        jest.advanceTimersByTime(MANDATORY_SYNC_POLLING_DELAY);
-      });
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask for retry
+      act(() => { jest.advanceTimersByTime(MANDATORY_SYNC_POLLING_DELAY); });
+      await Promise.resolve(); // flush await getAccountBridge microtask for retry runSync
 
       expect(mockSync).toHaveBeenCalledTimes(2);
 
@@ -249,10 +242,8 @@ describe("useAleoPrivateSync", () => {
       jest.useFakeTimers();
       const { result } = renderHook(() => useAleoPrivateSync({ account: makeAleoAccount() }));
 
-      act(() => {
-        result.current.start();
-      });
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask
+      act(() => { result.current.start(); });
+      await Promise.resolve(); // flush await getAccountBridge microtask
 
       // stop() unsubscribes before the observable completes naturally
       act(() => {
@@ -305,7 +296,7 @@ describe("useAleoPrivateSync", () => {
   describe("autoStart: true", () => {
     it("should call sync immediately on mount", async () => {
       renderHook(() => useAleoPrivateSync({ account: makeAleoAccount(), autoStart: true }));
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask
+      await act(async () => {}); // flush autoStart microtask from await getAccountBridge
 
       expect(mockSync).toHaveBeenCalledTimes(1);
     });
@@ -323,7 +314,7 @@ describe("useAleoPrivateSync", () => {
         useAleoPrivateSync({ account: makeAleoAccount(), autoStart: true }),
       );
 
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask
+      await act(async () => {}); // flush autoStart microtask so bridge.sync() subscribes before events
 
       await act(async () => {
         syncSubject.next(() => makeAleoAccount(100, true));
@@ -632,8 +623,7 @@ describe("useAleoPrivateSync", () => {
         { initialState },
       );
 
-      // Flush from(Promise.resolve(bridge)) microtask so mockSync is subscribed
-      await Promise.resolve();
+      await Promise.resolve(); // flush autoStart microtask (avoid OOM: async act + fake timers)
 
       // Advance some progress via the progress subject
       act(() => {
@@ -732,7 +722,7 @@ describe("useAleoPrivateSync", () => {
         { initialState },
       );
 
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask for second sync
+      await act(async () => {}); // flush autoStart microtask
 
       expect(mockSync).toHaveBeenCalledTimes(2);
       expect(second.current.isSyncing).toBe(true);
@@ -767,7 +757,7 @@ describe("useAleoPrivateSync", () => {
         { initialState },
       );
 
-      await Promise.resolve(); // flush from(Promise.resolve(bridge)) microtask for second sync
+      await act(async () => {}); // flush autoStart microtask
 
       expect(mockSync).toHaveBeenCalledTimes(2);
       expect(second.current.isSyncing).toBe(true);

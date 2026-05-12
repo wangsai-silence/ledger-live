@@ -1,5 +1,5 @@
 import React from "react";
-import { Observable } from "rxjs";
+import { of } from "rxjs";
 import { DEFAULT_ZCASH_PRIVATE_INFO } from "@ledgerhq/coin-bitcoin/chain-adapters/zcash/constants";
 import { render, screen, waitFor, withFlagOverrides } from "tests/testSetup";
 import AccountBalanceSummaryFooter from "../AccountBalanceSummaryFooter";
@@ -207,16 +207,11 @@ describe("Bitcoin Account Balance Summary Footer", () => {
     });
 
     const updater = jest.fn();
-    const syncMock = jest.fn(
-      () =>
-        new Observable<(account: unknown) => unknown>(subscriber => {
-          subscriber.next(updater);
-          subscriber.complete();
-        }),
+    const syncMock = jest.fn().mockReturnValue(of(updater));
+    const bridge = { sync: syncMock };
+    mockedGetAccountBridge.mockReturnValue(
+      Object.assign(Promise.resolve(bridge), { status: "fulfilled", value: bridge }) as unknown as ReturnType<typeof getAccountBridge>,
     );
-    mockedGetAccountBridge.mockReturnValue({
-      sync: syncMock,
-    } as unknown as ReturnType<typeof getAccountBridge>);
     const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
 
     const { user, store } = render(

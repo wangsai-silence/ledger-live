@@ -97,12 +97,15 @@ describe("useAmountScreenViewModel", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockedGetAccountBridge.mockReturnValue({
+    const bridge = {
       updateTransaction: (tx: Record<string, unknown>, patch: Record<string, unknown>) => ({
         ...tx,
         ...patch,
       }),
-    } as never);
+    };
+    mockedGetAccountBridge.mockReturnValue(
+      Object.assign(Promise.resolve(bridge), { status: "fulfilled", value: bridge }) as never,
+    );
 
     mockedGetMainAccount.mockImplementation((account: Account | TokenAccount) => {
       if (!isAccount(account)) {

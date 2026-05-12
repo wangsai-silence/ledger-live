@@ -1,4 +1,15 @@
 import { useListHeaderComponents } from "../ListHeaderComponent";
+
+jest.mock("@ledgerhq/live-common/bridge/index", () => {
+  const accountBridge = { isEditableOperation: undefined, isAccountEmpty: undefined, isStuckOperation: undefined };
+  const accountBridgePromise = Object.assign(Promise.resolve(accountBridge), {
+    status: "fulfilled" as const,
+    value: accountBridge,
+  });
+  return {
+    getAccountBridge: jest.fn(() => accountBridgePromise),
+  };
+});
 import { BalanceHistoryWithCountervalue, ValueChange } from "@ledgerhq/types-live";
 import { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { LayoutChangeEvent } from "react-native";
