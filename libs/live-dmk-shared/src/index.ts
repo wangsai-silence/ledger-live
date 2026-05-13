@@ -9,6 +9,10 @@ export {
   buildDefaultHttpBlindSigningReporter,
 } from "./services/LiveBlindSigningReporter";
 export type { LiveBlindSigningContext } from "./services/LiveBlindSigningReporter";
+export {
+  LiveContactsDataSource,
+  liveContactsDataSource,
+} from "./services/LiveContactsDataSource";
 
 export { ConnectAppDeviceAction } from "./device-action/ConnectApp/ConnectAppDeviceAction";
 export type {
