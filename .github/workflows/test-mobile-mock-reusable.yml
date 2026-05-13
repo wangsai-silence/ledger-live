@@ -355,6 +355,27 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
           echo "Using pre-computed shard ${{ matrix.shard }}/${{ matrix.total }} with $(echo '${{ matrix.files }}' | wc -w) test files"
 
+      # Boot the three named simulators in the background so they are warm by
+      # the time `pnpm detox test` starts. The runners are long-lived so the
+      # simulators already exist by name; we only need to boot them. This step
+      # overlaps with `pnpm install`, `Detox Post Install` and the two S3 cache
+      # downloads, reclaiming most of the silent gap before the first test.
+      - name: Boot iOS Simulators in Background
+        shell: bash
+        run: |
+          LOG_FILE="${{ env.MOBILE_ARTIFACTS_ROOT }}/simulator-boot.log"
+          mkdir -p "${{ env.MOBILE_ARTIFACTS_ROOT }}"
+          nohup bash -c '
+            xcrun simctl boot "iOS Simulator" || true
+            xcrun simctl boot "iOS Simulator 2" || true
+            xcrun simctl boot "iOS Simulator 3" || true
+            xcrun simctl bootstatus "iOS Simulator"
+            xcrun simctl bootstatus "iOS Simulator 2"
+            xcrun simctl bootstatus "iOS Simulator 3"
+            echo "✅ All simulators booted"
+          ' > "$LOG_FILE" 2>&1 &
+          echo "ℹ️ Simulator boot started in background (log: $LOG_FILE)."
+
       - uses: nick-fields/retry@v3
         name: install dependencies
         id: install-dependencies
