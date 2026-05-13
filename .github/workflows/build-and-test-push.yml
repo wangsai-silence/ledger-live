@@ -16,22 +16,22 @@ jobs:
   # LLD
   build-desktop:
     name: "Build Desktop"
-    uses: LedgerHQ/ledger-live/.github/workflows/build-desktop-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/build-desktop-reusable.yml@support/retire-turbo
     secrets: inherit
 
   test-desktop:
     name: "Test Desktop"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-desktop-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-desktop-reusable.yml@support/retire-turbo
     secrets: inherit
 
   test-mobile:
     name: "Test Mobile"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-mobile-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-mobile-reusable.yml@support/retire-turbo
     secrets: inherit
 
   build-test-mobile:
     name: "Build & Test Mobile"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-mobile-mock-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-mobile-mock-reusable.yml@support/retire-turbo
     secrets: inherit
     with:
       macos-specificity-runner-label: "performance-pool"
@@ -42,34 +42,34 @@ jobs:
   # Tests
   test-libraries:
     name: "Test Libraries"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-libs-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-libs-reusable.yml@support/retire-turbo
     secrets: inherit
 
   test-features:
     name: "Test Features"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-features-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-features-reusable.yml@support/retire-turbo
     secrets: inherit
 
   test-design-system:
     name: "Test UI Libs"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-design-system-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-design-system-reusable.yml@support/retire-turbo
     secrets: inherit
 
   build-web-tools:
     name: "Build Web Tools"
-    uses: LedgerHQ/ledger-live/.github/workflows/build-web-tools-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/build-web-tools-reusable.yml@support/retire-turbo
     secrets: inherit
     with:
       vercel-production: ${{ github.ref_name == 'develop' && 'true' || 'false' }}
 
   test-cli:
     name: "Test CLI"
-    uses: LedgerHQ/ledger-live/.github/workflows/test-cli-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/test-cli-reusable.yml@support/retire-turbo
     secrets: inherit
 
   build-wallet-cli:
     name: "Build Wallet CLI"
-    uses: LedgerHQ/ledger-live/.github/workflows/build-wallet-cli-reusable.yml@develop
+    uses: LedgerHQ/ledger-live/.github/workflows/build-wallet-cli-reusable.yml@support/retire-turbo
     secrets: inherit
 
   # Final Check required

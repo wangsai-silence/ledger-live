@@ -39,10 +39,10 @@ jobs:
         shell: bash
 
       - name: Setup git user
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-git-user@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-git-user@support/retire-turbo
 
       - name: Setup the caches
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@support/retire-turbo
         id: setup-caches
         with:
           use-mise: true
@@ -79,18 +79,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
 
-      - uses: LedgerHQ/ledger-live/tools/actions/get-package-infos@develop
+      - uses: LedgerHQ/ledger-live/tools/actions/get-package-infos@support/retire-turbo
         id: post-desktop-version
         with:
           path: ${{ github.workspace }}/apps/ledger-live-desktop
 
-      - uses: LedgerHQ/ledger-live/tools/actions/get-package-infos@develop
+      - uses: LedgerHQ/ledger-live/tools/actions/get-package-infos@support/retire-turbo
         id: post-mobile-version
         with:
           path: ${{ github.workspace }}/apps/ledger-live-mobile
 
       - name: tag nightly ref
-        uses: LedgerHQ/ledger-live/tools/actions/composites/create-or-update-tag@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/create-or-update-tag@support/retire-turbo
         with:
           ref: ${{ steps.get-sha.outputs.sha }}
           tagName: nightly

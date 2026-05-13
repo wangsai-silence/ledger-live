@@ -50,7 +50,7 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
       - name: Setup the caches
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@support/retire-turbo
         id: setup-caches
         with:
           use-mise: true
@@ -62,7 +62,7 @@ jobs:
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
 
-      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-test-desktop@develop
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-test-desktop@support/retire-turbo
         id: setup-test-desktop
         with:
           skip_builds: true
@@ -96,7 +96,7 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Setup the caches
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@support/retire-turbo
         id: setup-caches
         with:
           use-mise: true
@@ -168,7 +168,7 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
       - name: Setup caches
         id: caches
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@support/retire-turbo
         with:
           use-mise: true
           gh-token: ${{ secrets.GITHUB_TOKEN }}
@@ -178,19 +178,19 @@ jobs:
           accountId: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
-      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-e2e-test-desktop@develop
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-e2e-test-desktop@support/retire-turbo
         id: setup-test-desktop
         with:
           build_type: testing
       - name: Setup Speculos image and Coin Apps
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-speculos_image@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-speculos_image@support/retire-turbo
         with:
           coinapps_path: coin-apps
           speculos_tag: ${{ env.SMOKE_SPECULOS_IMAGE_TAG }}
           bot_id: ${{ secrets.GH_BOT_APP_ID }}
           bot_key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
       - name: Set test environment variables
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-e2e-env@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-e2e-env@support/retire-turbo
         with:
           enable_broadcast: false
           build_type: testing
@@ -199,7 +199,7 @@ jobs:
         run: echo "filter=@smoke" >> $GITHUB_OUTPUT
         shell: bash
       - name: UI e2e smoke tests
-        uses: LedgerHQ/ledger-live/tools/actions/composites/run-e2e-playwright-tests@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/run-e2e-playwright-tests@support/retire-turbo
         with:
           speculos_device: nanoSP
           test_filter: ${{ steps.test-filter.outputs.filter }}
@@ -224,7 +224,7 @@ jobs:
       - name: Publish Allure report
         id: publish-allure
         if: ${{ !cancelled() }}
-        uses: LedgerHQ/ledger-live/tools/actions/composites/upload-allure-report@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/upload-allure-report@support/retire-turbo
         with:
           login: ${{ vars.ALLURE_USERNAME }}
           password: ${{ secrets.ALLURE_LEDGER_LIVE_PASSWORD }}
@@ -253,7 +253,7 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
       - name: Setup caches
         id: caches
-        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@develop
+        uses: LedgerHQ/ledger-live/tools/actions/composites/setup-caches@support/retire-turbo
         with:
           use-mise: true
           gh-token: ${{ secrets.GITHUB_TOKEN }}
@@ -263,7 +263,7 @@ jobs:
           accountId: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
           roleName: ${{ secrets.AWS_CACHE_ROLE_NAME }}
           region: ${{ secrets.AWS_CACHE_REGION }}
-      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-test-desktop@develop
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/setup-test-desktop@support/retire-turbo
         id: setup-test-desktop
         with:
           skip_ruby: true
@@ -302,7 +302,7 @@ jobs:
 
       - name: upload diffs to s3
         if: ${{ !cancelled() }}
-        uses: LedgerHQ/ledger-live/tools/actions/upload-images@develop
+        uses: LedgerHQ/ledger-live/tools/actions/upload-images@support/retire-turbo
         id: s3
         with:
           path: apps/ledger-live-desktop/tests/artifacts/test-results
@@ -362,7 +362,7 @@ jobs:
             fs.writeFileSync("./images.json", JSON.stringify(result, null, 2));
       - name: prepare comment with screenshots
         id: comment
-        uses: LedgerHQ/ledger-live/tools/actions/prepare-comment-screenshots@develop
+        uses: LedgerHQ/ledger-live/tools/actions/prepare-comment-screenshots@support/retire-turbo
         with:
           images: images.json
           no-actor: true
