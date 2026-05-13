@@ -10,12 +10,10 @@ jest.mock("../api", () => ({
 jest.mock("../utils", () => ({
   ...jest.requireActual("../utils"),
   transactionToIntent: jest.fn(),
-  applyMemoToIntent: jest.fn(),
   extractBalances: jest.fn(),
 }));
 
 const mockTransactionToIntent = utils.transactionToIntent as jest.Mock;
-const mockApplyMemoToIntent = utils.applyMemoToIntent as jest.Mock;
 const mockExtractBalances = utils.extractBalances as jest.Mock;
 
 describe("genericGetTransactionStatus", () => {
@@ -38,7 +36,6 @@ describe("genericGetTransactionStatus", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockTransactionToIntent.mockReturnValue({ intent: true });
-    mockApplyMemoToIntent.mockImplementation((intent: unknown) => intent);
     mockExtractBalances.mockReturnValue({});
     (getAlpacaApi as jest.Mock).mockReturnValue({
       validateIntent: jest.fn().mockResolvedValue(validateIntentResult),
@@ -68,4 +65,35 @@ describe("genericGetTransactionStatus", () => {
       expect(result.amount).toEqual(expected);
     },
   );
+
+  it("forwards a destination tag through transactionToIntent to validateIntent", async () => {
+    const realUtils = jest.requireActual("../utils");
+    mockTransactionToIntent.mockImplementation(realUtils.transactionToIntent);
+
+    const validateIntent = jest.fn().mockResolvedValue(validateIntentResult);
+    (getAlpacaApi as jest.Mock).mockReturnValue({ validateIntent });
+
+    const xrpAccount = {
+      ...account,
+      freshAddress: "rSender",
+      currency: { id: "ripple", name: "ripple", units: [{ name: "ripple", code: "XRP" }] },
+    };
+
+    const getStatus = genericGetTransactionStatus("mainnet", "xrp");
+    await getStatus(xrpAccount, {
+      amount: new BigNumber(100),
+      useAllAmount: false,
+      recipient: "rRecipient",
+      family: "xrp",
+      tag: 1234,
+    } as any);
+
+    expect(validateIntent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        memo: { type: "map", memos: new Map([["destinationTag", "1234"]]) },
+      }),
+      expect.anything(),
+      expect.anything(),
+    );
+  });
 });

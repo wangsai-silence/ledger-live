@@ -3,12 +3,7 @@ import { AccountAwaitingSendPendingOperations } from "@ledgerhq/errors";
 import BigNumber from "bignumber.js";
 import { getAlpacaApi } from "./api";
 import { getBridgeApi } from "./bridge";
-import {
-  bigNumberToBigIntDeep,
-  extractBalances,
-  applyMemoToIntent,
-  transactionToIntent,
-} from "./utils";
+import { bigNumberToBigIntDeep, extractBalances, transactionToIntent } from "./utils";
 import type { GenericTransaction } from "./types";
 
 // => alpaca validateIntent
@@ -30,6 +25,7 @@ export function genericGetTransactionStatus(
       subAccountId: transaction.subAccountId || "",
       memoType: transaction.memoType || "",
       memoValue: transaction.memoValue || "",
+      tag: transaction.tag,
       family: transaction.family,
       feesStrategy: transaction.feesStrategy,
       data: transaction.data,
@@ -48,13 +44,12 @@ export function genericGetTransactionStatus(
       }
     }
 
-    let intent = transactionToIntent(
+    const intent = transactionToIntent(
       account,
       draftTransaction,
       bridgeApi.computeIntentType,
       alpacaApi.craftTransactionData,
     );
-    intent = applyMemoToIntent(intent, transaction);
 
     const customFees = bigNumberToBigIntDeep({
       value: transaction.fees ?? new BigNumber(0),
