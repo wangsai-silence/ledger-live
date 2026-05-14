@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Trans } from "react-i18next";
 import { getMainAccount } from "@ledgerhq/live-common/account/index";
 import { TRANSACTION_TYPE } from "@ledgerhq/live-common/families/aleo/constants";
@@ -32,6 +32,19 @@ export const AleoSendStepRecipient = ({
     return null;
   }
 
+  const isTokenAccount = account.type === "TokenAccount";
+
+  // Token accounts only support public transfers – force the mode when a
+  // sub-account is selected so validation never blocks the Continue button.
+  useEffect(() => {
+    if (!isTokenAccount) return;
+    updateTransaction(t => {
+      if (t.family !== "aleo" || t.mode === TRANSACTION_TYPE.TRANSFER_PUBLIC) return t;
+      const { properties: _ignored, ...txWithoutProperties } = t;
+      return { ...txWithoutProperties, mode: TRANSACTION_TYPE.TRANSFER_PUBLIC };
+    });
+  }, [isTokenAccount]);
+
   const mainAccount = getMainAccount(account, parentAccount);
 
   return (
@@ -49,6 +62,9 @@ export const AleoSendStepRecipient = ({
           <Label>{t("send.steps.details.selectAccountDebit")}</Label>
           <SelectAccount
             id="account-debit-placeholder"
+            withSubAccounts
+            enforceHideEmptySubAccounts
+            subAccountFilter={a => !a.balance.isZero()}
             autoFocus={!openedFromAccount}
             onChange={onChangeAccount}
             value={account}
@@ -61,6 +77,7 @@ export const AleoSendStepRecipient = ({
           <BalanceSelector
             transaction={transaction}
             mainAccount={mainAccount}
+            disablePrivate={isTokenAccount}
             onChange={value => {
               updateTransaction(t => {
                 if (t.family !== "aleo") return t;

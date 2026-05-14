@@ -24,9 +24,10 @@ interface Props {
   transaction: Transaction;
   mainAccount: AleoAccount;
   onChange: (value: Source) => void;
+  disablePrivate?: boolean;
 }
 
-const BalanceSelector = ({ mainAccount, transaction, onChange }: Props) => {
+const BalanceSelector = ({ mainAccount, transaction, onChange, disablePrivate = false }: Props) => {
   const { t } = useTranslation();
   const unit = useAccountUnit(mainAccount);
   const locale = useSelector(localeSelector);
@@ -86,6 +87,7 @@ const BalanceSelector = ({ mainAccount, transaction, onChange }: Props) => {
           lastSyncDate={privateSyncDate}
           lastSyncTime={privateSyncTime}
           checked={isPrivateTransfer}
+          disabled={disablePrivate}
           onClick={() => onChange("private")}
         />
       </Flex>
@@ -102,14 +104,16 @@ const BalanceSelector = ({ mainAccount, transaction, onChange }: Props) => {
           checked={isPublicTransfer}
           onClick={() => onChange("public")}
         />
-        <BalanceOption
-          label={t("aleo.shared.balanceSelector.private")}
-          balance={formattedPrivateBalance}
-          lastSyncDate={privateSyncDate}
-          lastSyncTime={privateSyncTime}
-          checked={isPrivateTransfer}
-          onClick={() => onChange("private")}
-        />
+        {!disablePrivate && (
+          <BalanceOption
+            label={t("aleo.shared.balanceSelector.private")}
+            balance={formattedPrivateBalance}
+            lastSyncDate={privateSyncDate}
+            lastSyncTime={privateSyncTime}
+            checked={isPrivateTransfer}
+            onClick={() => onChange("private")}
+          />
+        )}
       </Flex>
       <div className="mt-20">
         <StepRecipientSeparator />
