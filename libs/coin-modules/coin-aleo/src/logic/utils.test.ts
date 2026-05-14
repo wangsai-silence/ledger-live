@@ -1,6 +1,9 @@
 import BigNumber from "bignumber.js";
 import type { TransactionIntent } from "@ledgerhq/coin-module-framework/api/types";
 import { encodeOperationId } from "@ledgerhq/ledger-wallet-framework/operation";
+import { encodeTokenAccountId } from "@ledgerhq/ledger-wallet-framework/account/accountId";
+import type { TokenAccount } from "@ledgerhq/types-live";
+import { emptyHistoryCache } from "@ledgerhq/ledger-wallet-framework/account";
 import aleoConfig from "../config";
 import {
   EXPLORER_TRANSFER_TYPES,
@@ -233,6 +236,83 @@ describe("patchAccountWithViewKey", () => {
 
     expect(() => patchAccountWithViewKey(mockAccount, "")).toThrow(
       `aleo: viewKey is missing in patchAccountWithViewKey ${mockAccount.freshAddress}`,
+    );
+  });
+
+  it("should update subAccounts parentId, id, and operations when viewKey is added", () => {
+    const mockViewKey = "AViewKey1mockviewkey";
+    const oldAccountId = "js:2:aleo:aleo1test:";
+    const newAccountId = `js:2:aleo:aleo1test::${mockViewKey}`;
+
+    const mockToken = {
+      type: "TokenCurrency" as const,
+      id: "aleo/aleo_token/tokenABC",
+      contractAddress: "tokenABC",
+      parentCurrency: getMockedCurrency(),
+      tokenType: "aleo_token" as const,
+      name: "TestToken",
+      ticker: "TTK",
+      units: [
+        { name: "TestToken", code: "TTK", magnitude: 6, showAllDigits: false, prefixCode: false },
+      ],
+    };
+    const oldTokenAccountId = encodeTokenAccountId(oldAccountId, mockToken);
+    const newTokenAccountId = encodeTokenAccountId(newAccountId, mockToken);
+
+    const tokenOp = getMockedOperation({
+      id: encodeOperationId(oldTokenAccountId, "tokenhash1", "IN"),
+      accountId: oldTokenAccountId,
+      hash: "tokenhash1",
+      type: "IN",
+    });
+
+    const subAccount: TokenAccount = {
+      type: "TokenAccount",
+      id: oldTokenAccountId,
+      parentId: oldAccountId,
+      token: mockToken,
+      balance: new BigNumber(100),
+      spendableBalance: new BigNumber(100),
+      creationDate: new Date(),
+      operations: [tokenOp],
+      operationsCount: 1,
+      pendingOperations: [],
+      balanceHistoryCache: emptyHistoryCache,
+      swapHistory: [],
+    };
+
+    const coinOpWithSubOp = getMockedOperation({
+      id: encodeOperationId(oldAccountId, "coinhash1", "NONE"),
+      accountId: oldAccountId,
+      hash: "coinhash1",
+      type: "NONE",
+      subOperations: [tokenOp],
+    });
+
+    const mockAccount = getMockedAccount({
+      id: oldAccountId,
+      operations: [coinOpWithSubOp],
+      subAccounts: [subAccount],
+    });
+
+    const result = patchAccountWithViewKey(mockAccount, mockViewKey);
+
+    expect(result.id).toBe(newAccountId);
+
+    const resultSub = result.subAccounts?.[0] as TokenAccount;
+    expect(resultSub).toBeDefined();
+    expect(resultSub.id).toBe(newTokenAccountId);
+    expect(resultSub.parentId).toBe(newAccountId);
+    expect(resultSub.operations[0].accountId).toBe(newTokenAccountId);
+    expect(resultSub.operations[0].id).toBe(
+      encodeOperationId(newTokenAccountId, "tokenhash1", "IN"),
+    );
+
+    const resultCoinOp = result.operations[0];
+    expect(resultCoinOp.accountId).toBe(newAccountId);
+    expect(resultCoinOp.subOperations?.[0].accountId).toBe(newTokenAccountId);
+    expect(resultCoinOp.subOperations?.[0].id).toBe(
+      encodeOperationId(newTokenAccountId, "tokenhash1", "IN"),
     );
   });
 });
@@ -834,6 +914,26 @@ describe("splitPrivateAndPublicOperations", () => {
 
     expect(publicOps.map(o => o.id)).toEqual(["pub1", "pub2", "pub3"]);
     expect(privateOps.map(o => o.id)).toEqual(["priv1", "priv2"]);
+  });
+
+  it("should treat token operations with transactionType private as public (not record-scanner private)", () => {
+    // Token ops (with tokenInfo in extra) must stay in the public bucket even when
+    // their transactionType is "private" — they come from the public API and are
+    // never returned by the record scanner, so misclassifying them as private would
+    // cause them to be dropped from the account on every combined sync.
+    const tokenPrivOp = getMockedOperation({
+      id: "token-priv",
+      extra: {
+        functionId: "transfer_private",
+        transactionType: "private",
+        tokenInfo: { programId: "token_registry.aleo", tokenId: "123" },
+      } as AleoOperationExtra,
+    });
+
+    const [privateOps, publicOps] = splitPrivateAndPublicOperations([tokenPrivOp]);
+
+    expect(privateOps).toEqual([]);
+    expect(publicOps).toHaveLength(1);
   });
 });
 

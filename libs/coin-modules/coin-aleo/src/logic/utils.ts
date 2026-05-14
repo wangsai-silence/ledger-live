@@ -397,7 +397,11 @@ function isPrivateOperation(operation: Operation): boolean {
     typeof extra === "object" &&
     extra !== null &&
     "transactionType" in extra &&
-    extra.transactionType === "private"
+    extra.transactionType === "private" &&
+    // Token operations (with tokenInfo) are NOT record-scanner private ops — they come from
+    // the public API and must stay in the public bucket so they are included in
+    // patchPublicOperations and preserved across sync cycles.
+    !("tokenInfo" in extra)
   );
 }
 
