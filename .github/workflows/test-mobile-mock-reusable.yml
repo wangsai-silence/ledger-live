@@ -355,25 +355,12 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
           echo "Using pre-computed shard ${{ matrix.shard }}/${{ matrix.total }} with $(echo '${{ matrix.files }}' | wc -w) test files"
 
-      # Boot the three named simulators in the background so they are warm by
-      # the time `pnpm detox test` starts. 
+      # Warm simulators before Detox; worker_count matches JEST_MAX_WORKERS (and iOS Simulator … N names in detox.config.js).
       - name: Boot iOS Simulators in Background
-        shell: bash
-        run: |
-          LOG_FILE="${{ env.MOBILE_ARTIFACTS_ROOT }}/simulator-boot.log"
-          mkdir -p "${{ env.MOBILE_ARTIFACTS_ROOT }}"
-          nohup bash -c '
-            xcrun simctl boot "iOS Simulator" || true
-            xcrun simctl boot "iOS Simulator 2" || true
-            xcrun simctl boot "iOS Simulator 3" || true
-            xcrun simctl boot "iOS Simulator 4" || true
-            xcrun simctl bootstatus "iOS Simulator"
-            xcrun simctl bootstatus "iOS Simulator 2"
-            xcrun simctl bootstatus "iOS Simulator 3"
-            xcrun simctl bootstatus "iOS Simulator 4"
-            echo "✅ All simulators booted"
-          ' > "$LOG_FILE" 2>&1 &
-          echo "ℹ️ Simulator boot started in background (log: $LOG_FILE)."
+        uses: LedgerHQ/ledger-live/tools/actions/composites/boot-ios-simulators-background@develop
+        with:
+          worker_count: ${{ env.JEST_MAX_WORKERS }}
+          artifacts_root: ${{ env.MOBILE_ARTIFACTS_ROOT }}
 
       - uses: nick-fields/retry@v3
         name: install dependencies
