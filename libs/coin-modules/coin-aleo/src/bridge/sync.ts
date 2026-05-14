@@ -507,14 +507,8 @@ export function buildSyncObservables(
   const isPublicSync = !!(syncType & SYNC_TYPE_TRANSPARENT);
   const isPrivateSync = !!(syncType & SYNC_TYPE_SHIELDED) && privateEnabled;
 
-  console.log("DEBUG", initialAccount?.aleoResources?.lastPrivateSyncDate);
-  console.log("DEBUG2", isPrivateSync);
-
   const hasPrivateSyncedBefore = !!initialAccount?.aleoResources?.lastPrivateSyncDate;
   const shouldRunPrivate = isPrivateSync && (hasPrivateSyncedBefore || !isPublicSync);
-
-  console.log("DEBUG3", hasPrivateSyncedBefore);
-  console.log("DEBUG4", shouldRunPrivate);
 
   const syncs: Observable<Partial<AleoAccount>>[] = [];
 
