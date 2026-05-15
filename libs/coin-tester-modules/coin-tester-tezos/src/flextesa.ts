@@ -19,13 +19,20 @@ export async function spawnFlextesa(): Promise<void> {
   // octez-client (bootstrap key import + protocol activation) finishes
   // slightly later. Poll until `get balance for alice` succeeds.
   const checkCmd = "docker exec tezos-sandbox octez-client get balance for alice";
+  let ready = false;
   for (let attempt = 0; attempt < 30; attempt++) {
     try {
       await execAsync(checkCmd, { timeout: 5_000 });
+      ready = true;
       break;
     } catch {
       await new Promise(r => setTimeout(r, 2_000));
     }
+  }
+  if (!ready) {
+    throw new Error(
+      "Tezos sandbox did not become ready: `octez-client get balance for alice` failed after 30 attempts.",
+    );
   }
   console.log(chalk.bgBlueBright(" -  TEZOS READY ✅  - "));
 }
