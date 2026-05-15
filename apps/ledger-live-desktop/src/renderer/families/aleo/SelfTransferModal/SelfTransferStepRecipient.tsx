@@ -74,6 +74,7 @@ export const SelfTransferStepRecipient = ({
           <BalanceSelector
             transaction={transaction}
             mainAccount={mainAccount}
+            subAccount={account.type === "TokenAccount" ? account : undefined}
             disablePrivate={account.type === "TokenAccount"}
             onChange={value => {
               updateTransaction(t => {

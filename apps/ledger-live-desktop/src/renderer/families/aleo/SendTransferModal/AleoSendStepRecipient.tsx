@@ -77,6 +77,7 @@ export const AleoSendStepRecipient = ({
           <BalanceSelector
             transaction={transaction}
             mainAccount={mainAccount}
+            subAccount={isTokenAccount ? account : undefined}
             disablePrivate={isTokenAccount}
             onChange={value => {
               updateTransaction(t => {
