@@ -45,6 +45,13 @@ describe("knownDevices reducer", () => {
     transport: rnHidTransportIdentifier,
   };
 
+  const nanoSPlus = {
+    id: "1002",
+    name: "Nano S Plus",
+    deviceModelId: DeviceModelId.nanoSP,
+    transport: rnHidTransportIdentifier,
+  };
+
   const discoveredNanoX: DiscoveredDevice = {
     id: "discovered-ble-id",
     name: "Discovered Nano X",
@@ -137,6 +144,42 @@ describe("knownDevices reducer", () => {
 
       // THEN
       expect(nextState.knownDevices).toEqual([flex, nanoX]);
+    });
+
+    it("GIVEN an existing HID known device WHEN updating the same model with a new id THEN it updates the existing entry", () => {
+      // GIVEN
+      const state = { knownDevices: [flex, nanoSPlus] };
+      const updatedDevice = {
+        ...nanoSPlus,
+        id: "usb_1002",
+        name: "Ledger Nano S Plus",
+      };
+
+      // WHEN
+      const nextState = reducer(state, updateKnownDevice(updatedDevice));
+
+      // THEN
+      expect(nextState.knownDevices).toEqual([flex, updatedDevice]);
+    });
+
+    it("GIVEN multiple HID known devices with the same model WHEN updating by id THEN it updates the matching entry", () => {
+      // GIVEN
+      const otherNanoSPlus = {
+        ...nanoSPlus,
+        id: "1003",
+        name: "Other Nano S Plus",
+      };
+      const updatedDevice = {
+        ...nanoSPlus,
+        name: "Renamed Nano S Plus",
+      };
+      const state = { knownDevices: [otherNanoSPlus, nanoSPlus] };
+
+      // WHEN
+      const nextState = reducer(state, updateKnownDevice(updatedDevice));
+
+      // THEN
+      expect(nextState.knownDevices).toEqual([otherNanoSPlus, updatedDevice]);
     });
   });
 
