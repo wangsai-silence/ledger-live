@@ -69,6 +69,7 @@ describe("send flow tracking", () => {
       blockchain: "",
       currency: "",
       currency_id: "",
+      newSendFlow: true,
     });
   });
 
@@ -90,6 +91,7 @@ describe("send flow tracking", () => {
       blockchain: "ethereum",
       currency: "USDT",
       currency_id: "ethereum/erc20/usd_tether__erc20_",
+      newSendFlow: true,
     });
   });
 });

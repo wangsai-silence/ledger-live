@@ -323,7 +323,7 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
     const isNewSendFlow = isEnabledForFamily(family, currencyId);
     const sendFlowTrackingProperties = isNewSendFlow
       ? getSendFlowTrackingProperties(account, parentAccount)
-      : { flow: "send" };
+      : { flow: "send", newSendFlow: false };
     track("button_clicked2", {
       button: "send",
       ...buttonSharedTrackingFields,
