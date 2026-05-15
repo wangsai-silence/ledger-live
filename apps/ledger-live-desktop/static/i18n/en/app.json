@@ -8553,8 +8553,9 @@
       "external": "Contact",
       "ledgerAccount": "Account"
     },
-    "suggestions": {
-      "ariaLabel": "Contact suggestions"
+    "picker": {
+      "ledgerAccounts": "Ledger accounts",
+      "addressBook": "Address book"
     },
     "overview": {
       "external": {
