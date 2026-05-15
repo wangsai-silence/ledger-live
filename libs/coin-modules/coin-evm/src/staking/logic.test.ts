@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import type { StakingAccount } from "../types";
 import { getMaxEstimatedBalance } from "./logic";
 
