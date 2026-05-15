@@ -29,6 +29,7 @@ import { track } from "~/renderer/analytics/segment";
 import {
   ActionDefault,
   BuyActionDefault,
+  DisplayActionDefault,
   ReceiveActionDefault,
   SellActionDefault,
   SendActionDefault,
@@ -48,6 +49,8 @@ import { useStake } from "LLD/hooks/useStake";
 import { useOpenSendFlow } from "LLD/features/Send/hooks/useOpenSendFlow";
 import { useNewSendFlowFeature } from "LLD/features/Send/hooks/useNewSendFlowFeature";
 import { getSendFlowTrackingProperties } from "LLD/features/Send/utils/tracking";
+import { useOpenDisplayFlow } from "LLD/features/Display/hooks/useOpenDisplayFlow";
+import { useDisplayPOCFeature } from "LLD/features/Display/hooks/useDisplayPOCFeature";
 
 type RenderActionParams = {
   label: React.ReactNode;
@@ -200,6 +203,14 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
   const openSendFlow = useOpenSendFlow();
   const { isEnabledForFamily, getFamilyFromAccount, getCurrencyIdFromAccount } =
     useNewSendFlowFeature();
+  const openDisplayFlow = useOpenDisplayFlow();
+  const {
+    isEnabledForFamily: isDisplayPOCEnabledForFamily,
+    getFamilyFromAccount: getDisplayPOCFamilyFromAccount,
+  } = useDisplayPOCFeature();
+  const isDisplayPOCAvailable = isDisplayPOCEnabledForFamily(
+    getDisplayPOCFamilyFromAccount(account, parentAccount ?? null),
+  );
 
   const manage = specific?.accountHeaderManageActions;
   let manageList: ManageAction[] = [];
@@ -361,6 +372,14 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
     });
   }, [openModal, parentAccount, account, buttonSharedTrackingFields]);
 
+  const onDisplay = useCallback(() => {
+    track("button_clicked2", {
+      button: "display",
+      ...buttonSharedTrackingFields,
+    });
+    openDisplayFlow({ account, parentAccount });
+  }, [openDisplayFlow, account, parentAccount, buttonSharedTrackingFields]);
+
   const manageActions: RenderActionParams[] = manageList
     .filter(item => (canOnlyStakeUsingLedgerLive && item.key === "Stake") || item.key !== "Stake")
     .map(item => ({
@@ -394,6 +413,7 @@ const AccountHeaderActions = ({ account, parentAccount, openModal }: Props) => {
       {availableOnSwap ? swapHeader : null}
       {availableOnBuy ? buyHeader : null}
       {availableOnSell && sellHeader}
+      {isDisplayPOCAvailable ? <DisplayActionDefault onClick={onDisplay} /> : null}
       {canSendResult ? (
         <SendAction account={account} parentAccount={parentAccount} onClick={onSend} />
       ) : null}
