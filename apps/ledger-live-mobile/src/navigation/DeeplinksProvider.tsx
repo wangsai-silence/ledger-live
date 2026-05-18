@@ -48,6 +48,7 @@ import {
 } from "./deeplinks/validation";
 import { handleWallet40Deeplink } from "./deeplinks/handleWallet40Deeplink";
 import { handleMarketBannerDeeplink } from "./deeplinks/handleMarketBannerDeeplink";
+import { handleAssetDetailDeeplink } from "./deeplinks/handleAssetDetailDeeplink";
 import { useProductTourEligibility } from "LLM/features/ProductTour";
 import { SplashScreenHandle } from "LLM/features/LaunchScreen/SplashScreenHandle";
 import { useDeeplinkDrawerCleanup } from "./deeplinks/useDeeplinkDrawerCleanup";
@@ -348,8 +349,12 @@ export const DeeplinksProvider = ({
   const userAcceptedTerms = useGeneralTermsAccepted();
   const buySellUiFlag = useFeature("buySellUi");
   const llmAccountListUI = useFeature("llmAccountListUI");
-  const { shouldDisplayMarketBanner, shouldDisplayWallet40MainNav, shouldDisplayAssetSection } =
-    useWalletFeaturesConfig("mobile");
+  const {
+    shouldDisplayMarketBanner,
+    shouldDisplayWallet40MainNav,
+    shouldDisplayAssetSection,
+    shouldDisplayAggregatedAssets,
+  } = useWalletFeaturesConfig("mobile");
   const web3hubFlag = useFeature("web3hub");
   const { isProductTourEligible } = useProductTourEligibility();
 
@@ -703,6 +708,15 @@ export const DeeplinksProvider = ({
                 return getStateFromPath("market", config);
               }
 
+              // When the aggregated Asset Detail flow is ON, `market/:currencyId` opens
+              // the new AssetDetail screen instead of MarketDetail.
+              if (shouldDisplayAggregatedAssets) {
+                return handleAssetDetailDeeplink({
+                  currencyId: validatedCurrencyId,
+                  source: "deeplink_market",
+                });
+              }
+
               url.pathname = `/${validatedCurrencyId}`;
               return getStateFromPath(url.href?.split("://")[1], config);
             }
@@ -722,8 +736,20 @@ export const DeeplinksProvider = ({
                 return getStateFromPath("portfolio", config);
               }
 
+              // When the aggregated Asset Detail flow is ON, `asset/:currencyId` opens
+              // the new AssetDetail screen instead of legacy WalletCentricAsset (LIVE-29734).
+              if (shouldDisplayAggregatedAssets) {
+                return handleAssetDetailDeeplink({
+                  currencyId: validatedCurrencyId,
+                  source: "deeplink_asset",
+                });
+              }
+
               url.pathname = `/${validatedCurrencyId}`;
               return getStateFromPath(url.href?.split("://")[1], config);
+            }
+            if (shouldDisplayAggregatedAssets) {
+              return getStateFromPath("portfolio", config);
             }
           }
 
@@ -893,6 +919,7 @@ export const DeeplinksProvider = ({
     shouldDisplayMarketBanner,
     shouldDisplayWallet40MainNav,
     shouldDisplayAssetSection,
+    shouldDisplayAggregatedAssets,
     liveAppProviderInitialized,
     manifests,
     web3hubFlag?.enabled,
