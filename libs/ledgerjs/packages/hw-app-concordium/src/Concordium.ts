@@ -72,6 +72,9 @@ const P2 = {
  * Provides low-level device communication for Concordium blockchain operations.
  * All transaction types use hw-app-specific formats (raw Buffers, no SDK dependencies).
  *
+ * @deprecated This package is deprecated and will be removed in a future release.
+ * Use `@ledgerhq/device-signer-kit-concordium` (DMK signer) instead.
+ *
  * @param transport - Transport for sending commands to a device
  * @param scrambleKey - App-specific key used to scramble APDU data exchanges
  */
